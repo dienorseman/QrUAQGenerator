@@ -1,10 +1,9 @@
 import { useContext, useState } from 'react';
 
-import { RecuperarModal } from './RecuperarModal';
-
 import { UserContext } from '../context/UserContext';
 
 import styles from './InicioSesionModal.module.css';
+import axios from 'axios';
 
 export const InicioSesionModal = () => {
     const { user, setUser } = useContext(UserContext);
@@ -16,7 +15,7 @@ export const InicioSesionModal = () => {
     });
 
     const [formState, setFormState] = useState({
-        email: '',
+        studentId: '',
         password: '',
     });
 
@@ -26,7 +25,7 @@ export const InicioSesionModal = () => {
         shown: false,
     });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         console.log('Formulario enviado');
         setModalState({
@@ -34,21 +33,45 @@ export const InicioSesionModal = () => {
             error: false,
             loading: true,
         });
-        setTimeout(() => {
+        if (formState.email !== '') {
             setModalState({
                 ...modalState,
-                error: true,
-                loading: false,
+                loading: true,
             });
-        }, 2000);
-        if (formState.email !== '') {
-            setUser({
-                ...user,
-                logged: true,
-                name: 'Juan',
-                email: formState.email,
-                studentId: '393456',
-            });
+            let formData = new FormData();
+            formData.append('expediente', formState.studentId);
+            formData.append('password', formState.password);
+            await axios(
+                {
+                    method: 'post',
+                    url: 'http://148.220.52.101/api/portal/login/',
+                    headers: {
+                        'Content-Type': 'multipart/form-data'  
+                    },
+                    data: formData,
+                }
+            )
+                .then((response) => {
+                    setUser({
+                        ...user,
+                        logged: true,
+                        name: response.data.nombre,
+                        plan: response.data.plan,
+                        studentId: response.data.expediente,
+                    });
+                    setModalState({
+                        ...modalState,
+                        show: false,
+                    });
+                })
+                .catch((error) => {
+                    console.log(error);
+                    setModalState({
+                        ...modalState,
+                        error: true,
+                        loading: false,
+                    });
+                });
         }
     };
 
@@ -82,82 +105,64 @@ export const InicioSesionModal = () => {
         });
     };
 
-    if (modalState.show) {
-        return (
-            <div className={styles.inicioSesionModal}>
-                <div className={styles.modalEncabezado}>
-                    <img src="/UAQ.svg" alt="" />
-                    <h1 className={styles.modalTitulo}>Bienvenido</h1>
-                </div>
-
-                <form
-                    onSubmit={handleSubmit}
-                    className={styles.modalFormulario}
-                >
-                    <div className={styles.modalFormulario__input}>
-                        <label>Correo</label>
-                        <input
-                            type="text"
-                            placeholder="mail@mail.com"
-                            onChange={onInputChange}
-                            name="email"
-                            value={formState.email}
-                        />
-                    </div>
-                    <div className={styles.modalFormulario__input}>
-                        <label>Contraseña</label>
-                        <div>
-                            <input
-                                type={passwordInputState.type}
-                                placeholder="********"
-                                onChange={onInputChange}
-                                name="password"
-                                value={formState.password}
-                            />
-                            <button type="button" onClick={showPassword}>
-                                <img
-                                    src={passwordInputState.url}
-                                    alt="ojo-icono"
-                                />
-                            </button>
-                        </div>
-                    </div>
-                    {modalState.error && (
-                        <div className={styles.error}>
-                            <div>
-                                <img src="/error.svg" alt="" />
-                            </div>
-                            <p>Contraseña incorrecta</p>
-                        </div>
-                    )}
-                </form>
-
-                <div className={styles.modalBotones}>
-                    <button
-                        className={styles.inicioSesionBoton}
-                        onClick={handleSubmit}
-                    >
-                        {modalState.loading ? (
-                            <img className={styles.loading} src="loading.svg" />
-                        ) : (
-                            'Iniciar sesión'
-                        )}
-                    </button>
-                    <button
-                        className={styles.recuperarBoton}
-                        onClick={handleReset}
-                    >
-                        ¿Olvidaste tu contraseña?
-                    </button>
-                </div>
+    return (
+        <div className={styles.inicioSesionModal}>
+            <div className={styles.modalEncabezado}>
+                <img src="/UAQ.svg" alt="" />
+                <h1 className={styles.modalTitulo}>Bienvenido</h1>
             </div>
-        );
-    } else {
-        return (
-            <RecuperarModal
-                daddyState={modalState}
-                setDaddyState={setModalState}
-            />
-        );
-    }
+
+            <form onSubmit={handleSubmit} className={styles.modalFormulario}>
+                <div className={styles.modalFormulario__input}>
+                    <label>Correo</label>
+                    <input
+                        type="text"
+                        placeholder="123456"
+                        onChange={onInputChange}
+                        name="studentId"
+                        value={formState.stidentID}
+                    />
+                </div>
+                <div className={styles.modalFormulario__input}>
+                    <label>Contraseña</label>
+                    <div>
+                        <input
+                            type={passwordInputState.type}
+                            placeholder="********"
+                            onChange={onInputChange}
+                            name="password"
+                            value={formState.password}
+                        />
+                        <button type="button" onClick={showPassword}>
+                            <img src={passwordInputState.url} alt="ojo-icono" />
+                        </button>
+                    </div>
+                </div>
+                {modalState.error && (
+                    <div className={styles.error}>
+                        <div>
+                            <img src="/error.svg" alt="" />
+                        </div>
+                        <p>Contraseña incorrecta</p>
+                    </div>
+                )}
+            </form>
+
+            <div className={styles.modalBotones}>
+                <button
+                    className={styles.inicioSesionBoton}
+                    onClick={handleSubmit}
+                >
+                    {modalState.loading ? (
+                        <img className={styles.loading} src="loading.svg" />
+                    ) : (
+                        'Iniciar sesión'
+                    )}
+                </button>
+                <button className={styles.recuperarBoton} onClick={handleReset}>
+                    ¿Olvidaste tu contraseña?
+                </button>
+            </div>
+        </div>
+    );
 };

@@ -6,16 +6,24 @@ import { UserContext } from '../context/UserContext';
 
 export const MainPage = () => {
     const { user } = useContext(UserContext);
-    const { name, studentId, email } = user;
+    const { name, studentId, plan } = user;
 
     return (
-        <div>
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'space-around',
+                height: '100vh',
+            }}
+        >
             <h1>Bienvenido {name}</h1>
 
             <QRCode value={studentId} />
 
             <h2>
-                Expediente: {studentId} email: {email}
+                Expediente: {studentId} plan: {plan}
             </h2>
         </div>
     );
