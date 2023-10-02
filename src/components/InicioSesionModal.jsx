@@ -114,7 +114,7 @@ export const InicioSesionModal = () => {
 
             <form onSubmit={handleSubmit} className={styles.modalFormulario}>
                 <div className={styles.modalFormulario__input}>
-                    <label>Correo</label>
+                    <label>Expediente</label>
                     <input
                         type="text"
                         placeholder="123456"

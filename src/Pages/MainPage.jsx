@@ -20,7 +20,7 @@ export const MainPage = () => {
         >
             <h1>Bienvenido {name}</h1>
 
-            <QRCode value={studentId} />
+            <QRCode value={studentId.toString()} />
 
             <h2>
                 Expediente: {studentId} plan: {plan}
