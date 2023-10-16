@@ -6,15 +6,31 @@ import styles from './InicioSesionModal.module.css';
 import axios from 'axios';
 
 export const InicioSesionModal = () => {
-    const { user, setUser } = useContext(UserContext);
+
+    const context = useContext(UserContext);
+
+    type FormStateType = {
+        studentId: string;
+        password: string;
+    };
+
+    if (!context) {
+        throw new Error("UserContext must be used within a UserProvider");
+    }
+
+    const { user, setUser } = context;
+
 
     const [modalState, setModalState] = useState({
-        error: false,
+        error: {
+            status: false,
+            message: '',
+        },
         loading: false,
         show: true,
     });
 
-    const [formState, setFormState] = useState({
+    const [formState, setFormState] = useState<FormStateType>({
         studentId: '',
         password: '',
     });
@@ -25,28 +41,23 @@ export const InicioSesionModal = () => {
         shown: false,
     });
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         e.preventDefault();
-        console.log('Formulario enviado');
-        setModalState({
-            ...modalState,
-            error: false,
-            loading: true,
-        });
-        if (formState.email !== '') {
+        if (formState.studentId !== '') {
             setModalState({
                 ...modalState,
                 loading: true,
             });
-            let formData = new FormData();
+            const formData = new FormData();
             formData.append('expediente', formState.studentId);
             formData.append('password', formState.password);
+
             await axios(
                 {
                     method: 'post',
                     url: 'http://148.220.52.101/api/portal/login/',
                     headers: {
-                        'Content-Type': 'multipart/form-data'  
+                        'Content-Type': 'multipart/form-data'
                     },
                     data: formData,
                 }
@@ -63,19 +74,32 @@ export const InicioSesionModal = () => {
                         ...modalState,
                         show: false,
                     });
+                    console.log(response.data);
                 })
                 .catch((error) => {
                     console.log(error);
                     setModalState({
                         ...modalState,
-                        error: true,
+                        error: {
+                            status: true,
+                            message: 'El expediente o la contraseña son incorrectos',
+                        },
                         loading: false,
-                    });
+                    })
                 });
+        } else {
+            setModalState({
+                ...modalState,
+                error: {
+                    status: true,
+                    message: 'El campo de expediente no puede estar vacío',
+                },
+                loading: false,
+            });
         }
     };
 
-    const onInputChange = (e) => {
+    const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormState({
             ...formState,
             [e.target.name]: e.target.value,
@@ -120,7 +144,7 @@ export const InicioSesionModal = () => {
                         placeholder="123456"
                         onChange={onInputChange}
                         name="studentId"
-                        value={formState.stidentID}
+                        value={formState.studentId}
                     />
                 </div>
                 <div className={styles.modalFormulario__input}>
@@ -133,17 +157,17 @@ export const InicioSesionModal = () => {
                             name="password"
                             value={formState.password}
                         />
-                        <button type="button" onClick={showPassword}>
+                        <button type="button" onClick={showPassword} disabled={!modalState.loading}>
                             <img src={passwordInputState.url} alt="ojo-icono" />
                         </button>
                     </div>
                 </div>
-                {modalState.error && (
+                {modalState.error.status && (
                     <div className={styles.error}>
                         <div>
                             <img src="/error.svg" alt="" />
                         </div>
-                        <p>Contraseña incorrecta</p>
+                        <p>{modalState.error.message}</p>
                     </div>
                 )}
             </form>

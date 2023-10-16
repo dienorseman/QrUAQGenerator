@@ -5,7 +5,17 @@ import { useContext } from 'react';
 import { UserContext } from '../context/UserContext';
 
 export const AppRouter = () => {
-    const { user } = useContext(UserContext);
+
+    const context = useContext(UserContext);
+
+
+
+    if (!context) {
+        throw new Error("UserContext must be used within a UserProvider");
+    }
+
+    const { user } = context;
+
     const { logged } = user;
 
     return (

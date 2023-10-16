@@ -1,12 +1,23 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 
 import QRCode from 'react-qr-code';
 
 import { UserContext } from '../context/UserContext';
 
+
 export const MainPage = () => {
-    const { user } = useContext(UserContext);
-    const { name, studentId, plan } = user;
+
+    const context = useContext(UserContext);
+
+
+
+    if (!context) {
+        throw new Error("UserContext must be used within a UserProvider");
+    }
+
+    const { user } = context;
+
+    const { name, plan, studentId } = user; 
 
     return (
         <div
